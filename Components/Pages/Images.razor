@@ -19,7 +19,7 @@ else
         @foreach (var image in images)
         {
             <div class="image-card">
-                <img src="@GetFullImageUrl(image.FilePath)" alt="@image.FileName" class="image" />
+                <img src="@image.FilePath" alt="@image.FileName" class="image" />
 
                 <div class="image-details">
                     <h3>@image.FileName</h3>
@@ -37,6 +37,9 @@ else
     protected override async Task OnInitializedAsync()
     {
        
+        Http.DefaultRequestHeaders.Add("Accept", "application/json");
+        Http.DefaultRequestHeaders.Add("Connection", "keep-alive");
+
         images = await LoadImagesFromApi();
     }
 
@@ -49,7 +52,6 @@ else
 
             if (response != null)
             {
-               
                 foreach (var image in response)
                 {
                     Console.WriteLine($"Image URL for ID {image.Id}: {image.FilePath}");
@@ -68,7 +70,6 @@ else
     {
         try
         {
-
             var response = await Http.DeleteAsync($"https://192.168.148.82:7137/api/ImageData/{id}");
 
             if (response.IsSuccessStatusCode)
@@ -82,11 +83,10 @@ else
         }
     }
 
-    // Helper function to get full URL for image
+    // Helper function to get the full URL for the image
     private string GetFullImageUrl(string filePath)
     {
-        // Prepend base URL if FilePath is relative
-        string baseUrl = "https://192.168.148.82:7137";
-        return filePath.StartsWith("http") ? filePath : $"{baseUrl}/{filePath}";
+        string baseUrl = "https://192.168.148.82:7137"; // Base URL for external access
+        return filePath.Replace("localhost", "192.168.148.82"); // Replace localhost with IP address
     }
 }
