@@ -1,0 +1,158 @@
+﻿@page "/"
+
+<h1>Hello, User!</h1>
+Welcome to Image Capture app.
+
+<div style="border: 2px dotted #ccc; border-radius: 10px; padding: 10px; width: 200px; height: 200px; text-align: center;">
+    @if (imageDataUrl != null)
+    {
+        <img src="@imageDataUrl" alt="Captured Image" style="max-width: 100%; max-height: 100%;" />
+    }
+    else
+    {
+        <p>No image selected</p>
+    }
+</div>
+
+@if (!isImageCaptured)
+{
+    <button @onclick="CaptureImage" style="background-color: #4CAF50; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Capture Image</button>
+}
+else
+{
+    <button @onclick="CaptureImage" style="background-color: #FFA500; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Re-Capture</button>
+    <button @onclick="SaveImage" style="background-color: #007BFF; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; margin-top: 20px;">Save</button>
+}
+
+@if (isLoading)
+{
+    <div class="spinner"></div> 
+}
+
+@if (showErrorPopup)
+{
+    <div class="error-popup">
+        <p>@errorMessage</p>
+        <button @onclick="CloseErrorPopup">Close</button>
+    </div>
+}
+
+@code {
+    private string imageDataUrl;
+    private bool isImageCaptured = false;
+    private bool isLoading = false;
+    private bool showErrorPopup = false;
+    private string errorMessage;
+
+    
+    private static readonly Uri BaseAddress = new Uri("https://192.168.148.82:7137");
+
+   
+    private static readonly HttpClient HttpClient = new HttpClient(new HttpClientHandler
+        {
+            
+            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+        })
+        {
+            BaseAddress = BaseAddress
+        };
+
+    private async Task CaptureImage()
+    {
+        try
+        {
+            
+            var cameraStatus = await Permissions.RequestAsync<Permissions.Camera>();
+            var storageStatus = await Permissions.RequestAsync<Permissions.Photos>();
+
+            if (cameraStatus == PermissionStatus.Granted && storageStatus == PermissionStatus.Granted)
+            {
+                var result = await MediaPicker.Default.CapturePhotoAsync();
+
+                if (result != null)
+                {
+                    
+                    var stream = await result.OpenReadAsync();
+                    using var memoryStream = new MemoryStream();
+                    await stream.CopyToAsync(memoryStream);
+
+                    
+                    byte[] imageBytes = memoryStream.ToArray();
+                    imageDataUrl = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+                    isImageCaptured = true;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Camera or storage permissions not granted.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error capturing image: {ex.Message}");
+        }
+    }
+
+    private async Task SaveImage()
+    {
+        if (string.IsNullOrEmpty(imageDataUrl))
+        {
+            Console.WriteLine("No image to save.");
+            return;
+        }
+
+        try
+        {
+            isLoading = true; 
+
+            
+            var imageBytes = Convert.FromBase64String(imageDataUrl.Replace("data:image/jpeg;base64,", ""));
+            using var content = new MultipartFormDataContent();
+            var imageContent = new ByteArrayContent(imageBytes);
+            imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+
+            
+            content.Add(imageContent, "imageFile", "captured_image.jpg");
+
+            
+            var response = await HttpClient.PostAsync("/api/ImageData", content);
+
+            isLoading = false; 
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Image uploaded successfully!");
+                Console.WriteLine($"Response: {responseContent}");
+
+               
+                imageDataUrl = null;
+                isImageCaptured = false;
+            }
+            else
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Image upload failed: {response.ReasonPhrase}");
+                Console.WriteLine($"Response Content: {responseContent}");  
+                ShowErrorPopup(response.ReasonPhrase);
+            }
+        }
+        catch (Exception ex)
+        {
+            isLoading = false; 
+            Console.WriteLine($"Error saving image: {ex.Message}");
+            ShowErrorPopup(ex.Message);
+        }
+    }
+
+    private void ShowErrorPopup(string message)
+    {
+        errorMessage = message;
+        showErrorPopup = true;
+    }
+
+    private void CloseErrorPopup()
+    {
+        showErrorPopup = false;
+    }
+}

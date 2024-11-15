@@ -1,0 +1,92 @@
+﻿@page "/gallery"
+
+@inject HttpClient Http
+@using PicsApp.Models
+
+<h1>Image Gallery</h1>
+
+@if (images == null)
+{
+    <p>Loading images...</p>
+}
+else if (images.Count == 0)
+{
+    <p>No images available.</p>
+}
+else
+{
+    <div class="image-gallery">
+        @foreach (var image in images)
+        {
+            <div class="image-card">
+                <img src="@GetFullImageUrl(image.FilePath)" alt="@image.FileName" class="image" />
+
+                <div class="image-details">
+                    <h3>@image.FileName</h3>
+                    <p>@image.UploadDate.ToString("yyyy-MM-dd")</p>
+                    <button @onclick="() => DeleteImage(image.Id)">Delete</button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<ImageInfo> images;
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+        images = await LoadImagesFromApi();
+    }
+
+    private async Task<List<ImageInfo>> LoadImagesFromApi()
+    {
+        try
+        {
+            // Fetch images from the API
+            var response = await Http.GetFromJsonAsync<List<ImageInfo>>("https://192.168.148.82:7137/api/ImageData");
+
+            if (response != null)
+            {
+               
+                foreach (var image in response)
+                {
+                    Console.WriteLine($"Image URL for ID {image.Id}: {image.FilePath}");
+                }
+            }
+            return response ?? new List<ImageInfo>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading images: {ex.Message}");
+            return new List<ImageInfo>();
+        }
+    }
+
+    private async Task DeleteImage(int id)
+    {
+        try
+        {
+
+            var response = await Http.DeleteAsync($"https://192.168.148.82:7137/api/ImageData/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                images = images.Where(i => i.Id != id).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting image: {ex.Message}");
+        }
+    }
+
+    // Helper function to get full URL for image
+    private string GetFullImageUrl(string filePath)
+    {
+        // Prepend base URL if FilePath is relative
+        string baseUrl = "https://192.168.148.82:7137";
+        return filePath.StartsWith("http") ? filePath : $"{baseUrl}/{filePath}";
+    }
+}

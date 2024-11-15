@@ -1,0 +1,49 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\obj\\Debug\\net8.0-android\\scopedcss\\bundle\\PicsApp.styles.css",
+      "PackagePath": "staticwebassets\\PicsApp.styles.css"
+    },
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "C:\\Users\\zimba\\source\\repos\\PicsApp\\wwwroot\\js\\sweetalertInterop.js",
+      "PackagePath": "staticwebassets\\js\\sweetalertInterop.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-android\\staticwebassets\\msbuild.PicsApp.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-android\\staticwebassets\\msbuild.build.PicsApp.props",
+      "PackagePath": "build\\PicsApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-android\\staticwebassets\\msbuild.buildMultiTargeting.PicsApp.props",
+      "PackagePath": "buildMultiTargeting\\PicsApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-android\\staticwebassets\\msbuild.buildTransitive.PicsApp.props",
+      "PackagePath": "buildTransitive\\PicsApp.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
